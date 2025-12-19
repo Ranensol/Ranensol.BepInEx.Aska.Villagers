@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- Target Framework & Language -->
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		
+		<!-- Assembly Identity -->
+		<AssemblyName>Ranensol.BepInEx.Aska.Villagers</AssemblyName>
+		<RootNamespace>Ranensol.BepInEx.Aska.Villagers</RootNamespace>
+		<Product>Ranensol Villagers</Product>
+		
+		<!-- Versioning -->
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+	</PropertyGroup>
+	<!-- Import game paths configuration -->
+	<Import Project="GamePaths.props" Condition="Exists('GamePaths.props')" />
+	<ItemGroup>
+		<!-- Core BepInEx framework for IL2CPP Unity games - provides BasePlugin, Config system, logging -->
+		<!-- Also automatically includes: HarmonyX, Il2CppInterop.Runtime, and other dependencies -->
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.738" />
+		
+		<!-- Auto-generates MyPluginInfo.PLUGIN_GUID/NAME/VERSION from project properties -->
+		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<!-- Main game code - contains all SSSGame namespace types (Villager, Homestead, Structure, etc.) -->
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(AskaInteropPath)\Assembly-CSharp.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- Game's core systems - contains SandSailorStudio namespace (StructureScoreManager, etc.) -->
+		<Reference Include="SandSailorStudio">
+			<HintPath>$(AskaInteropPath)\SandSailorStudio.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<!-- Unity's new input system - provides Keyboard.current and Key enum for hotkey detection -->
+		<Reference Include="Unity.InputSystem">
+			<HintPath>$(AskaInteropPath)\Unity.InputSystem.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- Unity engine core - provides GameObject, Transform, MonoBehaviour, AnimationCurve, etc. -->
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(AskaInteropPath)\UnityEngine.CoreModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- IL2CPP version of basic .NET types - needed for IL2CPP interop with standard library -->
+		<Reference Include="Il2Cppmscorlib">
+			<HintPath>$(AskaInteropPath)\Il2Cppmscorlib.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- IL2CPP System.Core types - provides Il2CppSystem.Collections.Generic.List<T> and LINQ support -->
+		<Reference Include="Il2CppSystem.Core">
+			<HintPath>$(AskaInteropPath)\Il2CppSystem.Core.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- Photon Fusion networking - game's multiplayer framework (VillagerOutlet spawning uses this) -->
+		<Reference Include="Fusion.Runtime.dll">
+			<HintPath>$(AskaInteropPath)\Fusion.Runtime.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- Unity UI system - provides TextMeshPro (TMP_Text) for HUD widgets -->
+		<Reference Include="UnityEngine.UI">
+			<HintPath>$(AskaInteropPath)\UnityEngine.UI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		
+		<!-- Unity TextMeshPro - provides TMP_Text for HUD text display -->
+		<Reference Include="Unity.TextMeshPro">
+			<HintPath>$(AskaInteropPath)\Unity.TextMeshPro.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+</Project>
