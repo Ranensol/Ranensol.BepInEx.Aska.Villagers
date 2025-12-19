@@ -66,7 +66,7 @@ DisplayBedsAvailable = true
 
 ## Multiplayer
 
-**Only the client that wants to use this mod needs it installed, other clients don't have to, and the server doesn't need it**
+**The server needs the mod for auto-assigning, the client needs the mod for manual/key press assigning/unassigning.**
 
 ## Support
 
