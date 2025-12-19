@@ -6,11 +6,11 @@
 
 ![GitHub release](https://img.shields.io/github/v/release/Ranensol/Ranensol.BepInEx.Aska.Villagers)
 
-A BepInEx mod for ASKA that automatically assigns villagers to the best available housing based on their skill tier and house quality, or manually assign/unassign all by configurable key press.
+A BepInEx mod for ASKA that automatically assigns summoned villagers to a house, and allows all villagers to be made homeless or assigned a house based on skill tier and house quality with a single keypress.
 
 ## Features
 
-- 🏠 **Auto-assigns** new villagers to best available houses
+- 🏠 **Auto-assigns** - New villagers to a bed, the worst one available
 - 🎯 **Tier-based priority** - Tier 4 villagers get the best houses first
 - 📊 **Smart scoring** - Uses actual game happiness (Comfort + Area Desirability)
 - ⌨️ **Hotkeys** - F8 to manually assign all homeless, F9 to make everyone homeless for re-sorting
@@ -18,7 +18,7 @@ A BepInEx mod for ASKA that automatically assigns villagers to the best availabl
 
 ## How It Works
 
-When you summon a villager, they're automatically assigned to the best available house. Higher-tier villagers get priority for better houses. The mod calculates which houses provide the most happiness and fills them optimally.
+When you summon a villager, they're automatically assigned to the worst available house. Higher-tier villagers get priority for better houses. The mod calculates which houses provide the most happiness and fills them optimally.
 
 ## Installation
 
@@ -84,4 +84,5 @@ MIT License - See LICENSE file for details
 
 ## Change log
 
+v1.0.1 - Improved algorithm, corrected new villager assignment to worst not best house.
 v1.0.0 - Initial release

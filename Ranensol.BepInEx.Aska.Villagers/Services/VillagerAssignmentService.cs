@@ -32,7 +32,8 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
 
                 Plugin.Log.LogInfo($"Assigning {homeless.Count} villagers to {homesteads.Count} available homesteads");
 
-                var slots = CreateHousingSlotsWithFinalOccupancy(homesteads, homeless.Count);
+                var slots = CreateHousingSlotsWithFinalOccupancy(homesteads, homeless.Count, sortBestFirst: !assignOnlyNewest);
+
                 AssignVillagersToSlots(homeless, slots);
             }
             catch (Exception ex)
@@ -103,9 +104,9 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
         /// Creates housing slots with correct final occupancy prediction.
         /// All slots in the same house will have the same score based on final occupancy after all assignments.
         /// </summary>
-        private static List<HousingSlot> CreateHousingSlotsWithFinalOccupancy(List<Homestead> homesteads, int villagersToAssign)
+        private static List<HousingSlot> CreateHousingSlotsWithFinalOccupancy(List<Homestead> homesteads, int villagersToAssign, bool sortBestFirst)
         {
-            var distribution = CalculateGreedyDistribution(homesteads, villagersToAssign);
+            var distribution = CalculateGreedyDistribution(homesteads, villagersToAssign, pickBestHouses: sortBestFirst);
             var slots = new List<HousingSlot>();
 
             foreach (var (homestead, finalOccupancy) in distribution)
@@ -129,55 +130,52 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
             }
 
             slots = [.. slots.OrderByDescending(s => s.PredictedScore)];
-            Plugin.Log.LogDebug($"Created {slots.Count} housing slots with final occupancy prediction");
+            Plugin.Log.LogDebug($"Created {slots.Count} housing slots");
 
             return slots;
         }
 
         /// <summary>
-        /// Calculates how many villagers will end up in each house by filling houses in order of best final happiness per person
+        /// Calculates greedy distribution by incrementally assigning villagers to houses
         /// </summary>
-        private static List<(Homestead homestead, int finalOccupancy)> CalculateGreedyDistribution(List<Homestead> homesteads, int villagersToAssign)
+        private static List<(Homestead homestead, int finalOccupancy)> CalculateGreedyDistribution(
+            List<Homestead> homesteads, int villagersToAssign, bool pickBestHouses)
         {
-            var distribution = new List<(Homestead, int)>();
-            var remaining = villagersToAssign;
+            var occupancy = homesteads.ToDictionary(h => h, h => h.GetAgentsCount());
+            var capacity = homesteads.ToDictionary(h => h, h => h.GetAgentsCapacity());
 
-            var sortedHouses = homesteads
-                .Select(h => new
-                {
-                    Homestead = h,
-                    CurrentOccupants = h.GetAgentsCount(),
-                    Capacity = h.GetAgentsCapacity(),
-                    Available = h.GetAgentsCapacity() - h.GetAgentsCount(),
-                    BaseScore = HomesteadScorer.GetBaseHappinessScore(h),
-                    FinalScorePerPersonAtFull = HomesteadScorer.PredictFinalHappinessScore(h, h.GetAgentsCapacity())
-                })
-                .OrderByDescending(x => x.FinalScorePerPersonAtFull)
-                .ToList();
+            Plugin.Log.LogDebug($"Greedy distribution for {villagersToAssign} villagers across {homesteads.Count} houses (picking {(pickBestHouses ? "best" : "worst")} houses):");
 
-            Plugin.Log.LogDebug($"Greedy distribution for {villagersToAssign} villagers across {sortedHouses.Count} houses:");
-
-            foreach (var house in sortedHouses)
+            for (var i = 0; i < villagersToAssign; i++)
             {
-                if (remaining <= 0)
-                {
-                    Plugin.Log.LogDebug($"  Skipped {house.Homestead._structure?.GetName()} (final score per person: {house.FinalScorePerPersonAtFull:F1}, {house.Available} beds) - no villagers remaining");
-                    break;
-                }
+                var availableHouses = homesteads
+                    .Where(h => occupancy[h] < capacity[h])
+                    .Select(h => new { House = h, Score = HomesteadScorer.PredictFinalHappinessScore(h, occupancy[h] + 1) });
 
-                if (house.Available <= 0) continue;
+                var selectedHouse = pickBestHouses
+                    ? availableHouses.OrderByDescending(x => x.Score).FirstOrDefault()?.House
+                    : availableHouses.OrderBy(x => x.Score).FirstOrDefault()?.House;
 
-                var toAssign = Math.Min(house.Available, remaining);
-                var finalOccupancy = house.CurrentOccupants + toAssign;
-                var actualFinalScore = HomesteadScorer.PredictFinalHappinessScore(house.Homestead, finalOccupancy);
+                if (selectedHouse == null) break;
 
-                distribution.Add((house.Homestead, finalOccupancy));
-                Plugin.Log.LogDebug($"  {house.Homestead._structure?.GetName()}: final score per person {actualFinalScore:F1}, assigning {toAssign}/{house.Available} beds (final: {finalOccupancy}/{house.Capacity})");
-
-                remaining -= toAssign;
+                occupancy[selectedHouse]++;
             }
 
-            Plugin.Log.LogDebug($"Distribution complete: {villagersToAssign - remaining}/{villagersToAssign} villagers allocated");
+            var distribution = occupancy
+                .Where(kvp => kvp.Value > kvp.Key.GetAgentsCount())
+                .Select(kvp =>
+                {
+                    var actualFinalScore = HomesteadScorer.PredictFinalHappinessScore(kvp.Key, kvp.Value);
+                    var available = capacity[kvp.Key] - kvp.Key.GetAgentsCount();
+                    var assigned = kvp.Value - kvp.Key.GetAgentsCount();
+
+                    Plugin.Log.LogDebug($"  {kvp.Key._structure?.GetName()}: final score per person {actualFinalScore:F1}, assigning {assigned}/{available} beds (final: {kvp.Value}/{capacity[kvp.Key]})");
+
+                    return (kvp.Key, kvp.Value);
+                })
+                .ToList();
+
+            Plugin.Log.LogDebug($"Distribution complete: {occupancy.Values.Sum() - homesteads.Sum(h => h.GetAgentsCount())}/{villagersToAssign} villagers allocated");
 
             return distribution;
         }
