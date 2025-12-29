@@ -30,7 +30,7 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
                     return;
                 }
 
-                Plugin.Log.LogInfo($"Assigning {homeless.Count} villagers to {homesteads.Count} available homesteads");
+                Plugin.Log.LogInfo($"Assigning {homeless.Count} villagers to {homesteads.Count} available homesteads in main village");
 
                 var slots = CreateHousingSlotsWithFinalOccupancy(homesteads, homeless.Count, sortBestFirst: !assignOnlyNewest);
 
@@ -44,13 +44,15 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
         }
 
         /// <summary>
-        /// Makes all villagers in the village homeless
+        /// Makes all villagers in the main village homeless
         /// </summary>
         public static void MakeAllVillagersHomeless()
         {
             try
             {
-                var villagers = UnityEngine.Object.FindObjectsOfType<Villager>();
+                var villagers = UnityEngine.Object.FindObjectsOfType<Villager>()
+                    .Where(v => v.GetHomeOutpostId() == 0);
+
                 var count = 0;
 
                 foreach (var villager in villagers)
@@ -63,7 +65,7 @@ namespace Ranensol.BepInEx.Aska.Villagers.Services
                     }
                 }
 
-                Plugin.Log.LogInfo($"Made {count} villagers homeless");
+                Plugin.Log.LogInfo($"Made {count} villagers in main village homeless");
             }
             catch (Exception ex)
             {

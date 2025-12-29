@@ -19,7 +19,7 @@ namespace Ranensol.BepInEx.Aska.Villagers.Homesteads
         /// </summary>
         public static List<Homestead> GetAvailableHomesteads()
         {
-            return [.. UnityEngine.Object.FindObjectsOfType<Homestead>().Where(h => IsValidHomestead(h) && HasAvailableBeds(h) && IsInMainVillage(h))];
+            return [.. UnityEngine.Object.FindObjectsOfType<Homestead>().Where(homestead => IsValidHomestead(homestead) && HasAvailableBeds(homestead) && IsInMainVillage(homestead))];
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Ranensol.BepInEx.Aska.Villagers.Homesteads
         /// </summary>
         public static List<Homestead> GetAllHomesteads()
         {
-            return [.. UnityEngine.Object.FindObjectsOfType<Homestead>().Where(h => IsValidHomestead(h) && IsInMainVillage(h))];
+            return [.. UnityEngine.Object.FindObjectsOfType<Homestead>().Where(homestead => IsValidHomestead(homestead) && IsInMainVillage(homestead))];
         }
 
         private static bool IsValidHomestead(Homestead homestead)
@@ -35,19 +35,15 @@ namespace Ranensol.BepInEx.Aska.Villagers.Homesteads
             return ValidHomesteadNames.Contains(homestead.name) && homestead.gameObject.activeSelf;
         }
 
-        private static bool HasAvailableBeds(Homestead h)
+        private static bool HasAvailableBeds(Homestead homestead)
         {
-            return h.GetAgentsCapacity() > h.GetAgentsCount();
+            return homestead.GetAgentsCapacity() > homestead.GetAgentsCount();
         }
 
-        private static bool IsInMainVillage(Homestead h)
+        private static bool IsInMainVillage(Homestead homestead)
         {
-            // If including outposts, accept all
-            if (Plugin.Config.IncludeOutposts.Value)
-                return true;
-
-            // Otherwise, main village only
-            var structure = h.GetComponent<Structure>();
+            // Always main village only - ignore outposts completely
+            var structure = homestead.GetComponent<Structure>();
             return structure != null && structure.OutpostId == 0;
         }
     }

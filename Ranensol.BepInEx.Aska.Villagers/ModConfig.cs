@@ -13,7 +13,6 @@ namespace Ranensol.BepInEx.Aska.Villagers
         public ConfigEntry<bool> TierBasedHousing { get; }
         public ConfigEntry<bool> UseHappinessScoring { get; }
         public ConfigEntry<Key> HotKeyMakeAllHomeless { get; }
-        public ConfigEntry<bool> IncludeOutposts { get; }
 
         public ModConfig(ConfigFile config)
         {
@@ -35,9 +34,6 @@ namespace Ranensol.BepInEx.Aska.Villagers
 
             UseHappinessScoring = config.Bind("3 - Housing", "UseHappinessScoring", true,
                 "Use actual game happiness calculations (Comfort + Area Desirability) to determine best houses. If disabled, uses simple house type priority (Longhouse > Cottage > Shelter)");
-
-            IncludeOutposts = config.Bind("3 - Housing", "IncludeOutposts", false,
-                "Include outpost houses when assigning villagers. WARNING: Villagers will be assigned to ANY available bed (main village or outposts) with no logic for which outpost they should go to. Leave disabled if you want to manage outpost housing manually.");
 
             HotKeyManualAssignment = config.Bind("4 - Hotkeys", "ManualAssignmentKey", Key.F8,
                 "Hotkey to manually trigger homeless villager assignment");

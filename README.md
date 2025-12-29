@@ -84,5 +84,6 @@ MIT License - See LICENSE file for details
 
 ## Change log
 
+v1.0.2 - Removed all interactions with outposts. Mod now works with main village only.
 v1.0.1 - Improved algorithm, corrected new villager assignment to worst not best house.
 v1.0.0 - Initial release
