@@ -41,9 +41,6 @@ TierBasedHousing = true
 ## Use actual happiness calculations (default: true)
 UseHappinessScoring = true
 
-## Include outpost houses - WARNING: assigns to ANY bed with no outpost logic (default: false)
-IncludeOutposts = false
-
 [Hotkeys]
 ## Manual assignment (default: F8)
 ManualAssignmentKey = F8
